@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | CluckCart Poultry</title>
+  <meta name="description" content="CluckCart Poultry admin dashboard - manage chicken products, stock, categories and sample orders.">
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+  <!-- ============ DEMO LOGIN SCREEN ============ -->
+  <section class="admin-login" id="admin-login">
+    <div class="login-card">
+      <img class="brand-mark" src="images/logo.svg" alt="CluckCart Poultry logo" width="66" height="66">
+      <h1>Admin Dashboard</h1>
+      <p class="sub">Sign in to manage the chicken catalogue, stock and sample orders.</p>
+
+      <p class="login-error" id="login-error" role="alert"></p>
+
+      <form id="admin-login-form" novalidate>
+        <div class="form-group">
+          <label for="admin-username">Username</label>
+          <input class="form-control" type="text" id="admin-username" name="username" placeholder="admin" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="admin-password">Password</label>
+          <input class="form-control" type="password" id="admin-password" name="password" placeholder="cluckcart123" autocomplete="current-password">
+        </div>
+        <button class="btn btn-green btn-block" type="submit">Sign in to dashboard</button>
+      </form>
+
+      <div class="credential-box">
+        <strong>Demonstration credentials</strong>
+        <p>Username: <code>admin</code> &nbsp;|&nbsp; Password: <code>cluckcart123</code></p>
+        <p>
+          <strong>Security note:</strong> this login runs entirely in the browser, so anyone can read the
+          credentials in the page source. A real business needs a server-side login, hashed passwords,
+          role-based access and a database.
+        </p>
+      </div>
+
+      <p style="margin:22px 0 0"><a class="btn btn-ghost btn-sm" href="index.html">Back to the website</a></p>
+    </div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div id="admin-dashboard" style="display:none">
+    <header class="admin-header">
+      <div class="container header-inner">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="images/logo.svg" alt="CluckCart Poultry logo" width="46" height="46">
+          <span class="brand-text"><strong>CluckCart</strong><small>Admin Dashboard</small></span>
+        </a>
+        <div class="header-actions">
+          <div class="admin-user">
+            <span>Signed in as <strong>admin</strong></span>
+            <a class="btn btn-ghost btn-sm" href="index.html">View Site</a>
+            <button class="btn btn-primary btn-sm" type="button" id="admin-logout">Log out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-shell">
+      <div class="container">
+        <nav class="admin-nav" aria-label="Dashboard sections">
+          <button class="is-active" type="button" data-tab="overview">Overview</button>
+          <button type="button" data-tab="products">Chicken Products</button>
+          <button type="button" data-tab="orders">Order Management</button>
+        </nav>
+
+        <!-- ============ OVERVIEW ============ -->
+        <section class="admin-section is-active" data-section="overview">
+          <div class="stat-grid">
+            <article class="stat-card">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              </div>
+              <div>
+                <div class="stat-value" id="stat-products">0</div>
+                <div class="stat-label">Total chicken products</div>
+              </div>
+            </article>
+
+            <article class="stat-card is-info">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+              </div>
+              <div>
+                <div class="stat-value" id="stat-stock">0</div>
+                <div class="stat-label">Total available stock</div>
+              </div>
+            </article>
+
+            <article class="stat-card is-danger">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              </div>
+              <div>
+                <div class="stat-value" id="stat-out">0</div>
+                <div class="stat-label">Out-of-stock products</div>
+              </div>
+            </article>
+
+            <article class="stat-card is-warning">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+              <div>
+                <div class="stat-value" id="stat-low">0</div>
+                <div class="stat-label">Low stock products</div>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 12h6M9 16h4"></path></svg>
+              </div>
+              <div>
+                <div class="stat-value" id="stat-orders">0</div>
+                <div class="stat-label">Total sample orders</div>
+              </div>
+            </article>
+          </div>
+
+          <div class="about-layout" style="gap:26px;align-items:start">
+            <div class="form-card">
+              <h3>Stock that needs attention</h3>
+              <div id="stock-attention"></div>
+            </div>
+            <div class="form-card">
+              <h3>How this demo works</h3>
+              <ul class="check-list">
+                <li>Product edits are saved in this browser with <code>localStorage</code> and survive a refresh.</li>
+                <li>Availability is calculated automatically from the stock quantity.</li>
+                <li>The age of a chicken decides its category: 4 months, 5 months, or 6 months and older.</li>
+                <li>Sample orders placed on the checkout page appear under "Order Management".</li>
+              </ul>
+              <div class="info-banner info-banner--info" style="margin-top:18px;margin-bottom:0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <div>A production system needs a backend, secure authentication and a real database before it can be used for a live business.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ PRODUCTS ============ -->
+        <section class="admin-section" data-section="products">
+          <div class="section-title-row">
+            <h2>Manage Chicken Products</h2>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" type="button" id="reset-products-btn">Reset sample data</button>
+              <button class="btn btn-green" type="button" id="add-product-btn">+ Add Chicken Product</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table" id="products-table">
+              <thead>
+                <tr>
+                  <th scope="col">Image</th>
+                  <th scope="col">Product</th>
+                  <th scope="col">Breed</th>
+                  <th scope="col">Age</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody">
+                <!-- Filled by js/admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============ ORDERS ============ -->
+        <section class="admin-section" data-section="orders">
+          <div class="section-title-row">
+            <h2>Order Management</h2>
+            <p class="muted small" style="margin:0">Sample orders saved by the demo checkout.</p>
+          </div>
+
+          <div class="empty-state" id="orders-empty" style="display:none">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            </div>
+            <h3>No sample orders yet</h3>
+            <p>Place a sample order on the checkout page and it will show up here automatically.</p>
+            <a class="btn btn-green" href="checkout.html">Open checkout</a>
+          </div>
+
+          <div id="orders-list">
+            <!-- Filled by js/admin.js -->
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div id="site-footer"></div>
+  </div>
+
+  <!-- ============ ADD / EDIT PRODUCT MODAL ============ -->
+  <div class="modal-overlay" id="product-modal" role="dialog" aria-modal="true" aria-labelledby="product-modal-title">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="product-modal-title">Add Chicken Product</h2>
+        <button class="modal-close" type="button" id="product-modal-close" aria-label="Close">&times;</button>
+      </div>
+
+      <form id="product-form" novalidate>
+        <div class="modal-body">
+          <p class="login-error" id="product-form-error" role="alert"></p>
+
+          <img class="preview-img" id="product-preview" src="images/placeholder.svg" alt="Preview of the product image">
+
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="p-name">Product name <span class="req">*</span></label>
+              <input class="form-control" type="text" id="p-name" placeholder="Rhode Island Red Pullet">
+            </div>
+
+            <div class="form-group">
+              <label for="p-breed">Breed <span class="req">*</span></label>
+              <input class="form-control" type="text" id="p-breed" placeholder="Rhode Island Red">
+            </div>
+
+            <div class="form-group">
+              <label for="p-age">Age in months <span class="req">*</span></label>
+              <input class="form-control" type="number" id="p-age" min="1" max="60" step="1" value="4">
+            </div>
+
+            <div class="form-group full">
+              <label for="p-category">Category (set by age)</label>
+              <select class="form-control" id="p-category">
+                <option value="4-month">4-Month-Old Chickens (age 4 months)</option>
+                <option value="5-month">5-Month-Old Chickens (age 5 months)</option>
+                <option value="6-plus">6-Month-Old Chickens &amp; Older (age 6 months or more)</option>
+              </select>
+              <p class="hint">Changing the age updates the category automatically.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="p-price">Price (&#8369;) <span class="req">*</span></label>
+              <input class="form-control" type="number" id="p-price" min="0" step="1" placeholder="850">
+            </div>
+
+            <div class="form-group">
+              <label for="p-stock">Stock quantity <span class="req">*</span></label>
+              <input class="form-control" type="number" id="p-stock" min="0" step="1" placeholder="10">
+              <p class="hint">Availability is updated automatically from this number.</p>
+            </div>
+
+            <div class="form-group full">
+              <label for="p-image">Image URL</label>
+              <input class="form-control" type="text" id="p-image" placeholder="images/chicken-rhode-island-red.svg">
+              <p class="hint">Use a file in the images folder or a full image link. A placeholder is used if the image cannot load.</p>
+            </div>
+
+            <div class="form-group full">
+              <label for="p-description">Description <span class="req">*</span></label>
+              <textarea class="form-control" id="p-description" placeholder="Short description shown on the product card and details page."></textarea>
+            </div>
+
+            <div class="form-group full">
+              <label for="p-characteristics">Characteristics</label>
+              <input class="form-control" type="text" id="p-characteristics" placeholder="Strong egg layers, Heat tolerant, Docile temperament">
+              <p class="hint">Separate each characteristic with a comma.</p>
+            </div>
+
+            <div class="form-group full">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                <input type="checkbox" id="p-featured"> Feature this chicken on the home page
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <button class="btn btn-ghost" type="button" id="product-modal-cancel">Cancel</button>
+          <button class="btn btn-green" type="submit">Save product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/products.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

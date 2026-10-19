@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CluckCart automated tests</title>
+</head>
+<body>
+  <pre id="out">running...</pre>
+  <div id="frames"></div>
+  <!-- This image request is held open by the test runner so that the window "load"
+       event (and therefore the automated DOM dump) only fires after the tests finish. -->
+  <img src="http://127.0.0.1:8123/hold" alt="" width="1" height="1">
+
+  <script src="js/products.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var CC = window.CluckCart;
+    var results = [];
+    var out = document.getElementById('out');
+
+    function log(pass, name, extra) {
+      results.push({ pass: pass, name: name, extra: extra || '' });
+      out.textContent += '\n' + (pass ? 'PASS' : 'FAIL') + ' - ' + name + (extra ? ' :: ' + extra : '');
+    }
+    function step(name) {
+      out.textContent += '\n... ' + name;
+    }
+    window.addEventListener('unhandledrejection', function (e) {
+      log(false, 'UNHANDLED REJECTION', String(e.reason && (e.reason.message || e.reason)));
+      finish();
+    });
+    function eq(actual, expected, name) {
+      var pass = String(actual) === String(expected);
+      log(pass, name, pass ? '' : 'expected "' + expected + '" got "' + actual + '"');
+      return pass;
+    }
+    function ok(value, name) {
+      log(Boolean(value), name, value ? '' : 'value was falsy');
+      return Boolean(value);
+    }
+
+    function loadPage(src) {
+      return new Promise(function (resolve) {
+        var frame = document.createElement('iframe');
+        frame.style.width = '1200px';
+        frame.style.height = '800px';
+        frame.src = src;
+        frame.onload = function () {
+          setTimeout(function () { resolve(frame); }, 250);
+        };
+        document.getElementById('frames').appendChild(frame);
+      });
+    }
+
+    function text(frameOrDoc, selector) {
+      var doc = frameOrDoc.contentDocument || frameOrDoc;
+      var el = doc.querySelector(selector);
+      return el ? el.textContent.trim() : '';
+    }
+
+    function run() {
+      /* ================= A. DATA LAYER ================= */
+      localStorage.clear();
+
+      var products = CC.getProducts();
+      eq(products.length, 12, 'A1 default catalogue has 12 products');
+      ok(localStorage.getItem('cluckcart.products.v1') !== null, 'A2 catalogue is persisted to localStorage');
+
+      eq(CC.categoryForAge(4), '4-month', 'A3 age 4 -> 4-month category');
+      eq(CC.categoryForAge(5), '5-month', 'A4 age 5 -> 5-month category');
+      eq(CC.categoryForAge(6), '6-plus', 'A5 age 6 -> 6-plus category');
+      eq(CC.categoryForAge(14), '6-plus', 'A6 age 14 -> 6-plus category');
+      eq(CC.ageForCategory('5-month'), 5, 'A7 category 5-month -> age 5');
+      eq(CC.ageForCategory('6-plus'), 6, 'A8 category 6-plus -> age 6');
+
+      eq(CC.getAvailability({ stock: 0 }).key, 'out', 'A9 stock 0 -> out of stock');
+      eq(CC.getAvailability({ stock: 2 }).key, 'low', 'A10 stock 2 -> low stock');
+      eq(CC.getAvailability({ stock: 30 }).key, 'available', 'A11 stock 30 -> available');
+      eq(CC.formatPeso(850), '\u20B1850', 'A12 peso formatting');
+      eq(CC.escapeHTML('<b>"x"</b>'), '&lt;b&gt;&quot;x&quot;&lt;/b&gt;', 'A13 HTML escaping');
+
+      /* --- cart rules --- */
+      var outOfStock = products.filter(function (p) { return Number(p.stock) === 0; })[0];
+      ok(Boolean(outOfStock), 'A14 catalogue contains an out-of-stock product');
+      var addOut = CC.addToCart(outOfStock.id, 1);
+      eq(addOut.ok, false, 'A15 out-of-stock product cannot be added');
+      ok(/out of stock/i.test(addOut.message), 'A16 out-of-stock message is shown', addOut.message);
+
+      var available = products.filter(function (p) { return Number(p.stock) > 0; })[0];
+      var addOk = CC.addToCart(available.id, 2);
+      eq(addOk.ok, true, 'A17 available product can be added');
+      eq(CC.getCartCount(), 2, 'A18 cart counter counts quantities');
+      eq(CC.getCart().length, 1, 'A19 cart has one line');
+
+      var overStock = CC.addToCart(available.id, 9999);
+      eq(overStock.ok, false, 'A20 cannot add more than the available stock');
+      eq(CC.getCartCount(), 2, 'A21 failed add does not change the cart');
+
+      var setBad = CC.setCartQty(available.id, 9999);
+      eq(setBad.ok, false, 'A22 setCartQty rejects more than stock');
+      eq(CC.setCartQty(available.id, 3).ok, true, 'A23 setCartQty accepts a valid quantity');
+      eq(CC.getCartCount(), 3, 'A24 cart count updated after quantity change');
+
+      /* --- totals --- */
+      var totals = CC.getCartTotals();
+      eq(totals.subtotal, available.price * 3, 'A25 subtotal is correct');
+      eq(totals.deliveryFee, 150, 'A26 delivery fee applied under the free threshold');
+      eq(totals.total, totals.subtotal + 150, 'A27 total equals subtotal plus delivery');
+
+      /* make the cart big enough for free delivery */
+      var pricey = products.filter(function (p) { return p.price >= 1600 && Number(p.stock) >= 4; })[0];
+      CC.clearCart();
+      CC.addToCart(pricey.id, 4);
+      var freeTotals = CC.getCartTotals();
+      eq(freeTotals.deliveryFee, 0, 'A28 free delivery above the threshold');
+      eq(freeTotals.total, freeTotals.subtotal, 'A29 total equals subtotal when delivery is free');
+
+      /* --- remove / clear --- */
+      CC.removeFromCart(pricey.id);
+      eq(CC.getCartCount(), 0, 'A30 removeFromCart empties the cart');
+      eq(CC.getCartTotals().total, 0, 'A31 empty cart totals are zero');
+
+      /* --- products CRUD --- */
+      var created = CC.addProduct({
+        name: 'Test Hen', breed: 'Test Breed', ageMonths: 7, price: 999,
+        stock: 5, image: 'images/placeholder.svg', description: 'Created by the test.',
+        characteristics: 'Fast, Calm'
+      });
+      ok(Boolean(created.id), 'A32 addProduct creates a product with an id');
+      eq(CC.getProducts().length, 13, 'A33 catalogue grew to 13 products');
+      eq(CC.categoryForAge(CC.getProductById(created.id).ageMonths), '6-plus', 'A34 new product is in the right category');
+      eq(CC.getProductById(created.id).characteristics.length, 2, 'A35 characteristics parsed from a comma list');
+
+      var edited = CC.updateProduct(created.id, { price: 1234, stock: 0 });
+      eq(edited.price, 1234, 'A36 updateProduct changes the price');
+      eq(CC.getAvailability(CC.getProductById(created.id)).key, 'out', 'A37 availability follows the stock value');
+      eq(CC.deleteProduct(created.id), true, 'A38 deleteProduct removes the product');
+      eq(CC.getProducts().length, 12, 'A39 catalogue is back to 12 products');
+
+      /* --- orders --- */
+      var order = {
+        id: CC.generateOrderId(), createdAt: new Date().toISOString(),
+        customer: { name: 'Test Buyer', phone: '09175550142', address: '1 Test Street, Batangas City' },
+        items: [{ productId: available.id, name: available.name, price: available.price, qty: 1, lineTotal: available.price }],
+        subtotal: available.price, deliveryFee: 150, total: available.price + 150, status: 'Pending'
+      };
+      CC.createOrder(order);
+      eq(CC.getOrders().length, 1, 'A40 sample order is saved');
+      ok(/^CC-\d{8}-\d{4}$/.test(order.id), 'A41 order id format', order.id);
+      CC.updateOrderStatus(order.id, 'Processing');
+      eq(CC.getOrders()[0].status, 'Processing', 'A42 order status can be updated');
+      ok(localStorage.getItem('cluckcart.orders.v1') !== null, 'A43 orders are persisted to localStorage');
+
+      /* ================= B. PAGE RENDERING ================= */
+      var shop = null, home = null, details = null, cart = null, checkout = null, admin = null;
+
+      loadPage('index.html').then(function (frame) {
+        step('index loaded');
+        home = frame;
+        var doc = frame.contentDocument;
+        eq(doc.querySelectorAll('#featured-products .product-card').length, 4, 'B1 home shows 4 featured products');
+        ok(doc.querySelector('#site-header .site-nav') !== null, 'B2 shared header is injected');
+        ok(doc.querySelector('#site-footer .site-footer') !== null, 'B3 shared footer is injected');
+        eq(doc.querySelectorAll('.category-card').length, 3, 'B4 home shows 3 age category cards');
+        ok(text(doc, '#stat-stock').length > 0, 'B5 live stock number is filled in');
+        ok(doc.querySelector('.hero-card-list li') !== null, 'B6 hero catalogue card is filled');
+        return loadPage('shop.html');
+      }).then(function (frame) {
+        step('shop loaded');
+        shop = frame;
+        var doc = frame.contentDocument;
+        eq(doc.querySelectorAll('#product-grid .product-card').length, 12, 'B7 shop lists all 12 chickens');
+        ok(/Showing 12 chickens/.test(text(doc, '#result-count')), 'B8 result counter is correct', text(doc, '#result-count'));
+
+        doc.querySelector('.chip[data-category="5-month"]').click();
+        eq(doc.querySelectorAll('#product-grid .product-card').length, 4, 'B9 filter 5-month shows 4 chickens');
+
+        doc.querySelector('.chip[data-category="4-month"]').click();
+        eq(doc.querySelectorAll('#product-grid .product-card').length, 3, 'B10 filter 4-month shows 3 chickens');
+
+        doc.querySelector('.chip[data-category="6-plus"]').click();
+        eq(doc.querySelectorAll('#product-grid .product-card').length, 5, 'B11 filter 6-plus shows 5 chickens');
+
+        doc.querySelector('.chip[data-category="all"]').click();
+        eq(doc.querySelectorAll('#product-grid .product-card').length, 12, 'B12 all chickens restores 12');
+
+        var search = doc.getElementById('search-input');
+        search.value = 'leghorn';
+        search.dispatchEvent(new frame.contentWindow.Event('input', { bubbles: true }));
+        return new Promise(function (r) { setTimeout(r, 400); }).then(function () {
+          eq(doc.querySelectorAll('#product-grid .product-card').length, 1, 'B13 search by breed name finds 1 chicken');
+          search.value = 'sasso';
+          search.dispatchEvent(new frame.contentWindow.Event('input', { bubbles: true }));
+          return new Promise(function (r) { setTimeout(r, 400); });
+        }).then(function () {
+          eq(doc.querySelectorAll('#product-grid .product-card').length, 1, 'B14 search by name finds 1 chicken');
+          search.value = 'zzz-nothing';
+          search.dispatchEvent(new frame.contentWindow.Event('input', { bubbles: true }));
+          return new Promise(function (r) { setTimeout(r, 400); });
+        }).then(function () {
+          eq(doc.querySelectorAll('#product-grid .product-card').length, 0, 'B15 empty search shows no cards');
+          eq(doc.getElementById('empty-state').style.display, '', 'B16 empty state is visible');
+          doc.getElementById('clear-filters').click();
+          eq(doc.querySelectorAll('#product-grid .product-card').length, 12, 'B17 clear filters restores all chickens');
+          var sort = doc.getElementById('sort-select');
+          sort.value = 'price-asc';
+          sort.dispatchEvent(new frame.contentWindow.Event('change', { bubbles: true }));
+          var first = doc.querySelector('#product-grid .product-card .price');
+          ok(first.textContent.indexOf('850') !== -1, 'B18 sorting by price low-high starts with the cheapest', first.textContent);
+          sort.value = 'price-desc';
+          sort.dispatchEvent(new frame.contentWindow.Event('change', { bubbles: true }));
+          var firstDesc = doc.querySelector('#product-grid .product-card .price');
+          ok(firstDesc.textContent.indexOf('1,720') !== -1, 'B19 sorting by price high-low starts with the dearest', firstDesc.textContent);
+          return loadPage('product-details.html?id=' + encodeURIComponent(available.id));
+        });
+      }).then(function (frame) {
+        step('details loaded');
+        details = frame;
+        var doc = frame.contentDocument;
+        ok(text(doc, '.detail-title').indexOf(available.name) !== -1, 'B20 details page shows the selected chicken', text(doc, '.detail-title'));
+        ok(text(doc, '.detail-price').indexOf('850') !== -1, 'B21 details page shows the price', text(doc, '.detail-price'));
+        ok(text(doc, '.detail-block h3') !== '', 'B22 details page shows the description block');
+        ok(doc.querySelectorAll('.tag-list .tag').length > 0, 'B23 details page shows the characteristics');
+        ok(doc.getElementById('qty-input') !== null, 'B24 details page has a quantity selector');
+        ok(doc.getElementById('qty-plus') !== null, 'B25 details page has quantity buttons');
+
+        /* adding from the details page */
+        CC.clearCart();
+        var qty = doc.getElementById('qty-input');
+        qty.value = '2';
+        qty.dispatchEvent(new frame.contentWindow.Event('change', { bubbles: true }));
+        doc.getElementById('details-add').click();
+        eq(CC.getCartCount(), 2, 'B26 details page adds the chosen quantity to the cart');
+
+        return loadPage('cart.html');
+      }).then(function (frame) {
+        step('cart loaded');
+        cart = frame;
+        var doc = frame.contentDocument;
+        eq(doc.querySelectorAll('#cart-items .cart-row').length, 1, 'B27 cart renders the cart line');
+        ok(text(doc, '#cart-summary').indexOf('Total') !== -1, 'B28 cart summary is rendered');
+        ok(/Order Summary/.test(text(doc, '#cart-summary')), 'B29 cart summary has a heading');
+        var priceEl = doc.querySelector('.cart-line-price');
+        eq(priceEl.textContent.trim(), CC.formatPeso(available.price * 2), 'B30 cart line total is correct');
+
+        doc.querySelector('.qty-plus').click();
+        eq(CC.getCartCount(), 3, 'B31 cart plus button increases the quantity');
+        doc.querySelector('.qty-minus').click();
+        eq(CC.getCartCount(), 2, 'B32 cart minus button decreases the quantity');
+
+        /* going over the stock must be refused */
+        var input = doc.querySelector('.qty-input');
+        input.value = '9999';
+        input.dispatchEvent(new frame.contentWindow.Event('change', { bubbles: true }));
+        eq(CC.getCartCount(), 2, 'B33 cart refuses a quantity above the stock');
+
+        doc.querySelector('.cart-remove').click();
+        eq(CC.getCartCount(), 0, 'B34 cart remove empties the cart');
+        eq(doc.getElementById('cart-empty').style.display, '', 'B35 empty cart message is shown');
+        return loadPage('checkout.html');
+      }).then(function (frame) {
+        step('checkout loaded');
+        checkout = frame;
+        var doc = frame.contentDocument;
+        eq(doc.getElementById('checkout-empty').style.display, '', 'B36 checkout shows the empty-cart state');
+
+        /* put something in the cart and reload */
+        CC.clearCart();
+        CC.addToCart(available.id, 2);
+        frame.contentWindow.location.reload();
+        return new Promise(function (r) { setTimeout(r, 700); }).then(function () {
+          var doc2 = frame.contentDocument;
+          ok(doc2.getElementById('checkout-form-section').style.display !== 'none', 'B37 checkout form is visible with items in the cart');
+          ok(/Order Summary/.test(text(doc2, '#checkout-summary')), 'B38 checkout summary is rendered');
+
+          /* invalid submit */
+          doc2.querySelector('#checkout-form button[type="submit"]').click();
+          eq(doc2.getElementById('error-name').className.indexOf('is-visible') !== -1, true, 'B39 empty name shows an error');
+          eq(doc2.getElementById('error-phone').className.indexOf('is-visible') !== -1, true, 'B40 empty phone shows an error');
+          eq(doc2.getElementById('error-address').className.indexOf('is-visible') !== -1, true, 'B41 empty address shows an error');
+          eq(CC.getOrders().length, 1, 'B42 invalid submit does not create an order');
+
+          /* invalid phone */
+          var name = doc2.getElementById('customer-name');
+          var phone = doc2.getElementById('customer-phone');
+          var address = doc2.getElementById('customer-address');
+          name.value = 'Juan Dela Cruz';
+          phone.value = '12345';
+          address.value = '12 San Jose Street, Batangas City';
+          doc2.querySelector('#checkout-form button[type="submit"]').click();
+          ok(doc2.getElementById('error-phone').className.indexOf('is-visible') !== -1, 'B43 invalid phone number is rejected');
+
+          /* valid submit */
+          phone.value = '0917 555 0142';
+          address.value = '12 San Jose Street, Batangas City';
+          doc2.querySelector('#checkout-form button[type="submit"]').click();
+          eq(CC.getOrders().length, 2, 'B44 valid submit saves a sample order');
+          eq(doc2.getElementById('order-confirmation').style.display, '', 'B45 confirmation screen is shown');
+          ok(text(doc2, '#confirmation-code').indexOf('CC-') === 0, 'B46 confirmation shows the order code', text(doc2, '#confirmation-code'));
+          ok(doc2.getElementById('confirmation-details').children.length === 1, 'B47 confirmation lists the ordered items');
+          eq(CC.getCartCount(), 0, 'B48 the cart is emptied after the order');
+          ok(/No payment was processed/i.test(text(doc2, '#order-confirmation')), 'B49 confirmation states that no payment was taken');
+          return loadPage('admin.html');
+        });
+      }).then(function (frame) {
+        step('admin loaded');
+        admin = frame;
+        var doc = frame.contentDocument;
+
+        /* wrong credentials */
+        doc.getElementById('admin-username').value = 'admin';
+        doc.getElementById('admin-password').value = 'wrong';
+        doc.querySelector('#admin-login-form button[type="submit"]').click();
+        eq(doc.getElementById('login-error').className.indexOf('is-visible') !== -1, true, 'B50 wrong password shows an error');
+        eq(doc.getElementById('admin-dashboard').style.display, 'none', 'B51 dashboard stays hidden after a failed login');
+
+        /* correct credentials */
+        doc.getElementById('admin-password').value = 'cluckcart123';
+        doc.querySelector('#admin-login-form button[type="submit"]').click();
+        eq(doc.getElementById('admin-dashboard').style.display, 'block', 'B52 dashboard is shown after a successful login');
+        eq(doc.querySelectorAll('#products-tbody tr').length, 12, 'B53 product table lists all products');
+        ok(Number(text(doc, '#stat-products')) === 12, 'B54 stat card shows the product total', text(doc, '#stat-products'));
+        ok(Number(text(doc, '#stat-orders')) === 2, 'B55 stat card shows the sample order total', text(doc, '#stat-orders'));
+        ok(text(doc, '#stock-attention').length > 0, 'B56 stock attention list is rendered');
+
+        /* add a product */
+        doc.getElementById('add-product-btn').click();
+        eq(doc.getElementById('product-modal').className.indexOf('is-open') !== -1, true, 'B57 add product modal opens');
+        doc.getElementById('p-name').value = 'Automated Test Hen';
+        doc.getElementById('p-breed').value = 'Test Breed';
+        doc.getElementById('p-age').value = '5';
+        doc.getElementById('p-age').dispatchEvent(new frame.contentWindow.Event('change', { bubbles: true }));
+        eq(doc.getElementById('p-category').value, '5-month', 'B58 the category follows the age');
+        doc.getElementById('p-price').value = '777';
+        doc.getElementById('p-stock').value = '3';
+        doc.getElementById('p-description').value = 'Created by the automated test.';
+        doc.getElementById('p-characteristics').value = 'Test, Check';
+        doc.querySelector('#product-form button[type="submit"]').click();
+        eq(doc.querySelectorAll('#products-tbody tr').length, 13, 'B59 a new product is added to the table');
+        eq(CC.getProducts().length, 13, 'B60 the new product is stored');
+        eq(CC.getProducts()[0].ageMonths, 5, 'B61 the new product keeps the entered age');
+        eq(Number(text(doc, '#stat-products')), 13, 'B62 the product counter updates');
+
+        /* edit the product */
+        var editButton = doc.querySelector('#products-tbody [data-action="edit"]');
+        editButton.click();
+        eq(doc.getElementById('product-modal').className.indexOf('is-open') !== -1, true, 'B63 the edit modal opens');
+        doc.getElementById('p-name').value = 'Renamed Test Hen';
+        doc.getElementById('p-stock').value = '0';
+        doc.querySelector('#product-form button[type="submit"]').click();
+        eq(CC.getProducts()[0].name, 'Renamed Test Hen', 'B64 the product name is updated');
+        eq(CC.getAvailability(CC.getProducts()[0]).key, 'out', 'B65 availability updates from the new stock');
+
+        /* delete the product */
+        frame.contentWindow.confirm = function () { return true; };
+        doc.querySelector('#products-tbody [data-action="delete"]').click();
+        eq(CC.getProducts().length, 12, 'B66 the product is deleted after confirmation');
+        eq(doc.querySelectorAll('#products-tbody tr').length, 12, 'B67 the table updates after deleting');
+
+        /* order status */
+        var statusSelect = doc.querySelector('.status-select');
+        statusSelect.value = 'Confirmed';
+        statusSelect.dispatchEvent(new frame.contentWindow.Event('change', { bubbles: true }));
+        eq(CC.getOrders()[0].status, 'Confirmed', 'B68 the order status can be changed');
+
+        /* tabs */
+        doc.querySelector('.admin-nav button[data-tab="products"]').click();
+        eq(doc.querySelector('.admin-section[data-section="products"]').className.indexOf('is-active') !== -1, true, 'B69 the products tab switches');
+        doc.querySelector('.admin-nav button[data-tab="orders"]').click();
+        eq(doc.querySelector('.admin-section[data-section="orders"]').className.indexOf('is-active') !== -1, true, 'B70 the orders tab switches');
+
+        /* persistence across a reload */
+        return new Promise(function (r) { setTimeout(r, 200); });
+      }).then(function () {
+        /* reload the shop page and check the catalogue is still the edited one */
+        return loadPage('admin.html');
+      }).then(function (frame) {
+        eq(frame.contentDocument.getElementById('admin-dashboard').style.display, 'block', 'B71 the admin session survives a refresh');
+        return loadPage('shop.html');
+      }).then(function (frame) {
+        var doc = frame.contentDocument;
+        eq(doc.querySelectorAll('#product-grid .product-card').length, 12, 'B72 the shop still shows 12 products after the edits');
+        var card = doc.querySelector('#product-grid .product-card');
+        ok(card.textContent.indexOf('Renamed') === -1, 'B73 the deleted product is gone from the shop');
+        eq(CC.getOrders().length, 2, 'B74 sample orders are still stored');
+        return finish();
+      });
+    }
+
+    function finish() {
+      var passed = results.filter(function (r) { return r.pass; }).length;
+      var failed = results.length - passed;
+      out.textContent = 'TOTAL ' + results.length + ' | PASSED ' + passed + ' | FAILED ' + failed +
+        '\n' + out.textContent;
+      document.title = 'RESULTS total=' + results.length + ' passed=' + passed + ' failed=' + failed;
+      var hidden = document.createElement('h1');
+      hidden.id = 'summary';
+      hidden.textContent = 'TOTAL ' + results.length + ' PASSED ' + passed + ' FAILED ' + failed;
+      document.body.insertBefore(hidden, document.getElementById('out'));
+    }
+    window.addEventListener('error', function (e) {
+      log(false, 'UNCAUGHT ERROR', e.message + ' @ ' + e.filename + ':' + e.lineno);
+      finish();
+    });
+
+    try {
+      var chain = run();
+      if (chain && chain.catch) {
+        chain.catch(function (error) {
+          log(false, 'CHAIN ERROR', (error && error.message ? error.message : String(error)) + ' | ' + (error && error.stack ? error.stack : ''));
+          finish();
+        });
+      }
+    } catch (error) {
+      log(false, 'FATAL', error.message + ' | ' + (error.stack || ''));
+      finish();
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CluckCart Poultry | Healthy Chickens, Quality Choices</title>
+  <meta name="description" content="CluckCart Poultry raises healthy, well-cared-for chickens for backyard keepers and small farms. Browse chickens by age, check availability and order online.">
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <!-- The header and footer are inserted by js/ui.js so every page stays in sync. -->
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="home">
+      <div class="container hero-inner">
+        <div class="hero-content">
+          <span class="eyebrow">Fresh from our family farm</span>
+          <h1>Healthy Chickens, <span>Quality Choices.</span></h1>
+          <p class="hero-lead">
+            CluckCart Poultry raises free-range and heritage chickens the slow, careful way - proper feed,
+            clean bedding, daily checks and honest weights. Pick the age that fits your farm and
+            order with confidence.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="shop.html#products">Shop Chickens</a>
+            <a class="btn btn-ghost btn-lg" href="#about">Meet Our Farm</a>
+          </div>
+          <ul class="hero-points">
+            <li>Health-checked before delivery</li>
+            <li>Free delivery over &#8369;5,000</li>
+            <li>Live stock updates</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-card">
+            <h3>This week at CluckCart</h3>
+            <ul class="hero-card-list">
+              <li>
+                <img src="images/chicken-rhode-island-red.svg" alt="Rhode Island Red pullet" width="54" height="54">
+                <span><strong>Rhode Island Red</strong><small>4 months old - ready to lay</small></span>
+                <b>&#8369;850</b>
+              </li>
+              <li>
+                <img src="images/chicken-white-leghorn.svg" alt="White Leghorn pullet" width="54" height="54">
+                <span><strong>White Leghorn</strong><small>5 months old - top egg layer</small></span>
+                <b>&#8369;1,150</b>
+              </li>
+              <li>
+                <img src="images/chicken-sasso.svg" alt="Sasso free-range chicken" width="54" height="54">
+                <span><strong>Sasso Free-Range</strong><small>6 months old - native breed</small></span>
+                <b>&#8369;1,300</b>
+              </li>
+            </ul>
+            <a class="btn btn-green btn-block" href="shop.html">See all chickens</a>
+            <p class="demo-note">Sample catalogue shown for demonstration.</p>
+          </div>
+          <div class="hero-tag">
+            <span class="hero-tag-icon">&#127909;</span>
+            <div>
+              <strong>12 years of farming</strong>
+              <span>Family run, inspected monthly</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TRUST STRIP ============ -->
+    <section class="trust-strip">
+      <div class="container trust-grid">
+        <div><strong id="stat-breeds">12</strong><span>Breeds available</span></div>
+        <div><strong id="stat-stock">0</strong><span>Chickens in stock</span></div>
+        <div><strong>24h</strong><span>Order processing</span></div>
+        <div><strong>4.9/5</strong><span>Farmer rating</span></div>
+      </div>
+    </section>
+
+    <!-- ============ CATEGORIES ============ -->
+    <section class="section" id="categories">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Shop by age</span>
+          <h2>Find the right chicken for your farm</h2>
+          <p>Every chicken is grouped by age so you always know exactly what you are buying.
+            Pick a group below and we will show you what is ready.</p>
+        </div>
+
+        <div class="category-grid">
+          <a class="category-card cat-1" href="shop.html?category=4-month">
+            <span class="cat-age">4</span>
+            <h3>4-Month-Old Chickens</h3>
+            <p>Young pullets that are almost ready to start laying. The easiest way to start a backyard flock.</p>
+            <span class="cat-link" data-cat-count="4-month">Browse group &rarr;</span>
+          </a>
+          <a class="category-card cat-2" href="shop.html?category=5-month">
+            <span class="cat-age">5</span>
+            <h3>5-Month-Old Chickens</h3>
+            <p>Point-of-lay hens with excellent egg potential and calm behaviour, ideal for small commercial pens.</p>
+            <span class="cat-link" data-cat-count="5-month">Browse group &rarr;</span>
+          </a>
+          <a class="category-card cat-3" href="shop.html?category=6-plus">
+            <span class="cat-age">6+</span>
+            <h3>6-Month-Old &amp; Older</h3>
+            <p>Mature layers, roosters and heritage breeds for breeding, showing and heavier table birds.</p>
+            <span class="cat-link" data-cat-count="6-plus">Browse group &rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FEATURED PRODUCTS ============ -->
+    <section class="section section--tint" id="featured">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Best sellers</span>
+          <h2>Featured chickens</h2>
+          <p>Our most requested birds this month. Availability is updated by the farm team every morning.</p>
+        </div>
+        <div class="product-grid" id="featured-products">
+          <!-- Filled by js/main.js -->
+        </div>
+        <div class="text-center" style="margin-top:38px">
+          <a class="btn btn-green btn-lg" href="shop.html">Browse the full catalogue</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHY CHOOSE US ============ -->
+    <section class="section" id="why-us">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Why CluckCart</span>
+          <h2>Built on healthy flocks and honest service</h2>
+          <p>We grow slowly, sell honestly and support every customer with real farm advice.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <h3>Health-checked flock</h3>
+            <p>Every bird is inspected by our veterinarian before it is listed, so you receive a strong, active chicken.</p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            </div>
+            <h3>Safe farm delivery</h3>
+            <p>Cages with proper ventilation, careful transport and a 24-hour delivery window around Batangas and nearby towns.</p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </div>
+            <h3>Fair, clear pricing</h3>
+            <p>One price per head, no hidden fees. Delivery is free on orders above &#8369;5,000 so you can plan your budget.</p>
+          </article>
+
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6"></path></svg>
+            </div>
+            <h3>Free farm advice</h3>
+            <p>Buying your first flock? Our team will help you with housing, feed and how to introduce new birds to your coop.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT US ============ -->
+    <section class="section section--tint" id="about">
+      <div class="container about-layout">
+        <img src="images/about-chickens.svg" alt="Hens and chicks beside the CluckCart chicken coop" width="900" height="600">
+        <div>
+          <span class="eyebrow">About us</span>
+          <h2>Twelve years of raising chickens the patient way</h2>
+          <p>
+            CluckCart Poultry started with twelve hens and one borrowed shed. Today we keep a small,
+            carefully managed flock of free-range, heritage and commercial layer breeds on a family
+            farm in Batangas. We would rather sell you four healthy birds than forty weak ones.
+          </p>
+          <p>
+            Every chicken in our catalogue is raised on our own farm, fed with locally milled feed and
+            checked by hand twice a day. That is why our stock numbers are honest and our customers
+            come back season after season.
+          </p>
+          <ul class="check-list">
+            <li>Raised on our own farm - no middlemen, no resellers</li>
+            <li>Vaccinated and health-checked before listing</li>
+            <li>Clear weight and age for every single bird</li>
+            <li>Friendly after-sales support for new flock owners</li>
+          </ul>
+          <a class="btn btn-green" href="shop.html" style="margin-top:22px">See what is available</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="section" id="contact">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Contact</span>
+          <h2>Talk to the farm team</h2>
+          <p>Questions about breeds, quantities or delivery? We reply within the same day.</p>
+        </div>
+
+        <div class="contact-grid">
+          <article class="contact-card">
+            <h3>Visit the farm</h3>
+            <ul>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span><strong>CluckCart Poultry Farm</strong>Km 12, Barangay San Jose<br>Batangas City, Philippines</span>
+              </li>
+            </ul>
+          </article>
+
+          <article class="contact-card">
+            <h3>Call or message</h3>
+            <ul>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <span><strong>+63 917 555 0142</strong>Farm hotline, 7:00 AM - 6:00 PM</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <span><strong>hello@cluckcart.demo</strong>We answer within 24 hours</span>
+              </li>
+            </ul>
+          </article>
+
+          <article class="contact-card">
+            <h3>Farm hours</h3>
+            <ul>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span><strong>Monday - Saturday</strong>7:00 AM - 6:00 PM</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                <span><strong>Delivery areas</strong>Batangas, Laguna, Cavite and nearby towns</span>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CALL TO ACTION ============ -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="cta-band reveal">
+          <h2>Ready to start your own flock?</h2>
+          <p>Pick your chickens by age, check the live stock numbers and place a sample order in a couple of minutes.</p>
+          <a class="btn btn-primary btn-lg" href="shop.html">Shop Chickens</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="js/products.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chicken Details | CluckCart Poultry</title>
+  <meta name="description" content="Full details of a chicken available at CluckCart Poultry - breed, exact age, price, characteristics and live stock.">
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main>
+    <section class="page-banner">
+      <div class="container">
+        <p class="breadcrumb"><a href="index.html">Home</a> / <a href="shop.html">Shop Chickens</a> / Details</p>
+        <h1>Product Details</h1>
+        <p>Everything you need to know before you add this chicken to your order.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <ul class="breadcrumbs">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="shop.html">Shop Chickens</a></li>
+          <li id="crumb-name">Details</li>
+        </ul>
+
+        <div id="product-detail">
+          <!-- Filled by js/product-details.js -->
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tint" id="related-section">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Same age group</span>
+          <h2>More chickens in this group</h2>
+        </div>
+        <div class="product-grid" id="related-products">
+          <!-- Filled by js/product-details.js -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="js/products.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/product-details.js"></script>
+</body>
+</html>
